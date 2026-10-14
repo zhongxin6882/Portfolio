@@ -165,3 +165,6 @@
 @media(max-width:900px){.work-title{font-size:clamp(58px,8vw,95px)}.work-count .count-digits{font-size:clamp(86px,13vw,150px)}.work-mosaic{inset:18% 4% 8%;gap:6px}.mosaic-caption{font-size:8px;padding:16px 6px 6px}}
 @media(max-width:650px){.work-copy{top:12%;left:20px}.work-eyebrow{font-size:8px;margin-bottom:12px}.work-title{font-size:58px;margin-bottom:10px}.work-copy p{font-size:10px}.work-left .orbit-clock{left:24%;top:36%;width:50%;height:50%;opacity:.32}.work-left .orbit-clock time{font-size:21px}.work-count{bottom:15%;right:7%}.work-count .count-digits{font-size:76px}.count-caption{font-size:8px}.gallery-intro{height:145vh;min-height:800px}.intro-stage{height:100vh;min-height:500px}.work-mosaic{inset:15% 3% 10%;gap:4px}.intro-stage .intro-heading{top:9%}.mosaic-caption small{display:none}.mosaic-caption{font-size:7px}.mosaic-card{--drift:-75px}}
 @media(prefers-reduced-motion:reduce){.work-title span{animation:none}.count-reel,.mosaic-card,.work-mosaic{transition:none}}
+.motion-ready .work-title span,.motion-ready .loader-eyebrow,.motion-ready .loader-word,.motion-ready .loader-cat,.motion-ready .project-view{animation:none}
+.motion-ready #intro-loader,.motion-ready .count-reel{transition:none}
+.motion-ready .mosaic-card{transform:none;transition:filter .25s}
