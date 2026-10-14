@@ -61,6 +61,7 @@
   }
   function render(){
     cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);
+    const priorView=document.getElementById('project-view');if(priorView)window.FolioMotion?.projectDispose(priorView);
     motionCleanup?.();motionCleanup=null;
     galleryAbort?.abort();galleryAbort=null;
     if(projectKeyHandler){window.removeEventListener('keydown',projectKeyHandler);projectKeyHandler=null}document.body.classList.remove('project-open');
