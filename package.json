@@ -1,0 +1,17 @@
+{
+  "name": "portfolio-github-pages",
+  "version": "1.0.0",
+  "private": true,
+  "description": "九月十五的静态设计作品集",
+  "scripts": {
+    "vendor:gsap": "node scripts/copy-gsap.cjs",
+    "check": "node --check app.js && node --check motion.js && node --check content.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhongxin6882/Portfolio.git"
+  },
+  "dependencies": {
+    "gsap": "3.15.0"
+  }
+}
