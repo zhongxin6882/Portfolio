@@ -145,14 +145,14 @@ window.FolioMotion = (() => {
       }
       if (page === 'playground') {
         const tiles = query(root, '.play-tile');
-        tiles.forEach((tile, index) => {
+        tiles.forEach(tile => {
           const image = tile.querySelector('img');
           const grow = () => gsap.to(image, { scale: 1.06, duration: .4, ease: 'power2.out', overwrite: 'auto' });
           const shrink = () => gsap.to(image, { scale: 1, duration: .5, ease: 'power2.out', overwrite: 'auto' });
           tile.addEventListener('pointerenter', grow); tile.addEventListener('pointerleave', shrink);
           tile.addEventListener('focus', grow); tile.addEventListener('blur', shrink);
           cleanups.push(() => { tile.removeEventListener('pointerenter', grow); tile.removeEventListener('pointerleave', shrink); tile.removeEventListener('focus', grow); tile.removeEventListener('blur', shrink); });
-          gsap.fromTo(tile, { scale: .66, y: 45 + (index % 3) * 22, opacity: .58, transformOrigin: 'center center' }, {
+          gsap.fromTo(tile, { scale: .72, y: 40, opacity: .62, transformOrigin: 'center center' }, {
             scale: 1, y: 0, opacity: 1, ease: 'none',
             scrollTrigger: { ...scroll(tile, 'top 98%', 'top 40%'), scrub: .55 }
           });
