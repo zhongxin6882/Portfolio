@@ -125,6 +125,7 @@ window.FolioMotion = (() => {
           rollPlay(root, active + 1);
         };
         scroller.addEventListener('scroll', onScroll, { passive: true });
+        ScrollTrigger.refresh();
         return () => scroller.removeEventListener('scroll', onScroll);
       }
       ScrollTrigger.refresh();
