@@ -3,7 +3,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safe=u=>/^(assets\/|https:\/\/|mailto:)/.test(u||'')?esc(u):'#';
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame;
+  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort;
   document.body.classList.toggle('dark',dark);
   function route(){
     const parts=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
@@ -22,18 +22,25 @@
         :`<div class="left-playground"><h1>Playground</h1><p>想法、试验与未完的灵感。<br>为好奇心留一点空间。</p><span>08<small> / EXPLORATIONS</small></span></div>`;
     return `<aside class="panel left-panel"><div class="left-top mono">${esc(data.location)}</div><div class="left-center">${body}</div><div class="left-bottom mono"><button id="theme-toggle" type="button" aria-pressed="${dark}" aria-label="切换颜色"><i class="toggle-mark" aria-hidden="true"></i><span>${dark?'NORMAL':'INVERT'} COLOR</span></button><button id="sound-toggle" type="button" aria-pressed="${sound}" aria-label="${sound?'关闭':'开启'}交互音效">SOUND: <span class="sound-wave" aria-hidden="true">⌁</span></button></div></aside>`;
   }
+  function projectRows(index){
+    return `<span class="project-rows">${[-1,0,1].map(offset=>{
+      const p=projects[(index+offset+projects.length)%projects.length];
+      return `<span class="project-row ${offset===0?'selected':''}"><span class="project-kind">${esc(p.category)}</span><span class="project-rule" aria-hidden="true"></span><span class="project-name">${esc(p.title)}</span><span class="project-date mono">${esc(p.year)}</span></span>`;
+    }).join('')}</span>`;
+  }
   function work(){
     const order=[projects[0],projects[2],projects[3],projects[1]];
-    return `<section class="gallery-intro" aria-label="作品预览"><div class="collage" aria-hidden="true">${order.map((p,i)=>`<div class="collage-image collage-${i+1}">${image(p)}</div>`).join('')}</div><div class="intro-hint mono">SCROLL TO EXPLORE <span>↓</span></div></section><div class="gallery" role="list" aria-label="精选作品">${projects.map((p,i)=>`<section class="gallery-item" role="listitem" data-index="${i}"><a class="gallery-image-link" href="#/work/${encodeURIComponent(p.id)}" aria-label="查看 ${esc(p.title)} 项目详情">${image(p,'gallery-image')}<span class="gallery-dim"></span><span class="gallery-overlay"><span class="gallery-number mono">${esc(p.number)}</span><span class="gallery-category">${esc(p.category)}</span><span class="gallery-title">${esc(p.title)}</span><span class="gallery-year mono">${esc(p.year)}</span><span class="gallery-more mono">VIEW PROJECT ↗</span></span></a></section>`).join('')}</div><div class="gallery-end"><span class="mono">END OF SELECTED WORK</span><a href="#/about">GET TO KNOW ME ↗</a></div><div class="project-rail" aria-hidden="true"><span id="rail-count">00</span><div class="rail-lines">${projects.map(()=>'<i></i>').join('')}</div><span>0${projects.length}</span></div><div class="cursor-marker" aria-hidden="true"></div>`;
+    return `<section class="gallery-intro" aria-label="作品预览"><div class="collage" aria-hidden="true">${order.map((p,i)=>`<div class="collage-image collage-${i+1}">${image(p)}</div>`).join('')}</div><div class="intro-hint mono">SCROLL TO EXPLORE <span>↓</span></div></section><div class="gallery" role="list" aria-label="精选作品">${projects.map((p,i)=>`<section class="gallery-item" role="listitem" data-index="${i}"><a class="gallery-image-link" href="#/work/${encodeURIComponent(p.id)}" aria-label="查看 ${esc(p.title)} 项目详情">${image(p,'gallery-image')}<span class="gallery-dim"></span><span class="gallery-overlay"><span class="gallery-index mono">${esc(p.number)} / 0${projects.length}</span>${projectRows(i)}<span class="gallery-more mono">VIEW PROJECT ↗</span></span></a></section>`).join('')}</div><div class="gallery-end"><span class="mono">END OF SELECTED WORK</span><a href="#/about">GET TO KNOW ME ↗</a></div><div class="project-rail" aria-hidden="true"><span id="rail-count">00</span><div class="rail-lines">${projects.map(()=>'<i></i>').join('')}</div><span>0${projects.length}</span></div><div class="cursor-marker" aria-hidden="true"></div>`;
   }
   function about(){return `<div class="about-content"><h1>${esc(data.aboutTitle).replace('\n','<br>')}</h1><div class="about-row"><span class="mono">INFO</span><div>${data.about.map(s=>`<p>${esc(s)}</p>`).join('')}</div></div><div class="about-row"><span class="mono">EXPERIENCES</span><div>${data.experience.map(e=>`<div class="experience"><time>${esc(e.period)}</time><span>${esc(e.label)}</span></div>`).join('')}</div></div><div class="about-row"><span class="mono">CAPABILITIES</span><div class="chips">${data.focus.map(s=>`<span>${esc(s)}</span>`).join('')}</div></div>${data.email||data.social.length?`<div class="about-row"><span class="mono">LET'S TALK</span><div>${data.email?`<a class="big-mail" href="mailto:${esc(data.email)}">${esc(data.email)} ↗</a>`:''}<div class="socials">${data.social.map(s=>`<a href="${safe(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a>`).join('')}</div></div></div>`:''}</div>`}
   function playground(){const tiles=[projects[2],projects[0],projects[1],projects[3],projects[0],projects[2],projects[3],projects[1]];return `<div class="play-grid" aria-label="设计实验">${tiles.map((p,i)=>`<button class="play-tile play-tile-${i%5}" data-preview="${esc(p.id)}" type="button" aria-label="预览 ${esc(p.title)}">${image(p)}<span class="mono">0${i+1} / ${esc(p.category)}</span></button>`).join('')}</div><dialog id="preview-dialog" class="preview-dialog"><button class="close-preview mono" aria-label="关闭预览" type="button">CLOSE ×</button><div class="preview-image"></div><div class="preview-caption"></div></dialog>`}
   function detail(p){const next=projects[(projects.indexOf(p)+1)%projects.length];return `<article class="detail-content"><a class="back-link mono" href="#/">← BACK TO WORK</a><span class="mono detail-index">PROJECT ${esc(p.number)} / ${esc(p.year)}</span><h1>${esc(p.title)}</h1><p class="detail-summary">${esc(p.summary)}</p><div class="detail-hero">${image(p)}</div><div class="about-row"><span class="mono">PROJECT TYPE</span><p>${esc(p.category)}</p></div><div class="about-row"><span class="mono">EXPLORATION</span><div><p>${esc(p.summary)}</p><div class="chips">${p.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div></div></div><div class="about-row"><span class="mono">NOTE</span><p>这是可编辑的作品集示例。你可以在 content.js 中替换项目背景、过程、成果和封面图片。</p></div><div class="detail-next"><a href="#/">← ALL WORK</a><a href="#/work/${encodeURIComponent(next.id)}">NEXT PROJECT ↗</a></div></article>`}
   function render(){
     cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);
+    galleryAbort?.abort();galleryAbort=null;
     const current=route(),page=current.page;
     document.title=`${page==='work'?'作品':page==='detail'?current.project.title:page==='about'?'关于':'实验室'} — ${data.name}`;
-    root.innerHTML=`<div class="site">${left(page)}<main class="panel right-panel" id="main" tabindex="-1">${nav(page)}${page==='work'?work():page==='about'?about():page==='playground'?playground():detail(current.project)}</main></div><div id="page-wipe" aria-hidden="true"></div>`;
+    root.innerHTML=`<div class="site">${left(page)}<main class="panel right-panel" id="main" tabindex="-1">${nav(page)}${page==='work'?work():page==='about'?about():page==='playground'?playground():detail(current.project)}</main></div>${page==='work'?'<div class="work-spotlight" aria-hidden="true"><div class="spotlight-image"></div><div class="spotlight-shade"></div><div class="spotlight-content"></div></div>':''}<div id="page-wipe" aria-hidden="true"></div>`;
     document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
     document.getElementById('sound-toggle').addEventListener('click',toggleSound);
     document.querySelectorAll('a,button').forEach(el=>el.addEventListener('click',ping));
@@ -52,31 +59,41 @@
       if(!canvas.isConnected)return;const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=box.width,h=box.height;
       if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-      const cx=w*.5,cy=h*.51,r=Math.min(w,h)*.4,phase=reduced?0:Date.now()/55000,ink=dark?'221,213,206':'82,73,67';
+      const cx=w*.5,cy=h*.51,r=Math.min(w,h)*.39,phase=reduced?0:Date.now()/10500,ink=dark?'220,211,204':'80,71,66';
       for(let i=0;i<60;i++){
-        const a=i*Math.PI*2/60-Math.PI*.5+phase,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r,q=a+.48+Math.sin(phase*1.6+i*.09)*.075;
-        ctx.beginPath();ctx.moveTo(cx,cy);ctx.bezierCurveTo(cx+Math.cos(q)*r*.23,cy+Math.sin(q)*r*.28,cx+Math.cos(a-.55)*r*.66,cy+Math.sin(a-.55)*r*.74,x,y);
-        ctx.strokeStyle=`rgba(${ink},${i%5===0?.31:.16})`;ctx.lineWidth=.65;ctx.stroke();
-        ctx.fillStyle=i===new Date().getSeconds()?'#f05a24':`rgba(${ink},.62)`;ctx.font='9px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(i).padStart(2,'0'),cx+Math.cos(a)*(r+14),cy+Math.sin(a)*(r+14));
+        const a=i*Math.PI*2/60-Math.PI*.5,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+        const twist=a+.82+Math.sin(phase+i*.06)*.22,sx=cx+Math.cos(twist)*r*.12,sy=cy+Math.sin(twist)*r*.12;
+        const bend=a-.55+Math.sin(phase*.72+i*.08)*.16;
+        ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(cx+Math.cos(bend)*r*.52,cy+Math.sin(bend)*r*.52,x,y);
+        ctx.strokeStyle=`rgba(${ink},${i%5===0?.22:.13})`;ctx.lineWidth=.6;ctx.stroke();
+        ctx.fillStyle=`rgba(${ink},.63)`;ctx.font='8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(i).padStart(2,'0'),cx+Math.cos(a)*(r+15),cy+Math.sin(a)*(r+15));
       }
+      const second=new Date().getSeconds(),sa=second*Math.PI*2/60-Math.PI*.5;
+      ctx.beginPath();ctx.arc(cx+Math.cos(sa)*(r+29),cy+Math.sin(sa)*(r+29),2.2,0,Math.PI*2);ctx.fillStyle='#f45b2b';ctx.fill();
       if(!reduced)clockFrame=requestAnimationFrame(draw);
     };draw();
   }
   function initGallery(){
-    const panel=document.getElementById('main'),items=[...panel.querySelectorAll('.gallery-item')],intro=panel.querySelector('.gallery-intro'),rail=document.getElementById('rail-count'),cursor=panel.querySelector('.cursor-marker');
+    const panel=document.getElementById('main'),items=[...panel.querySelectorAll('.gallery-item')],intro=panel.querySelector('.gallery-intro'),rail=document.getElementById('rail-count'),cursor=panel.querySelector('.cursor-marker'),spotlight=document.querySelector('.work-spotlight');
+    galleryAbort=new AbortController();const signal=galleryAbort.signal;
+    let spotlightIndex=-1;
     const update=()=>{
       const mobile=matchMedia('(max-width:650px)').matches,viewport=mobile?window.innerHeight:panel.clientHeight,center=viewport*.5,panelRect=panel.getBoundingClientRect(),introRect=intro.getBoundingClientRect();
       const introTravel=mobile?-introRect.top:panelRect.top-introRect.top;
       intro.style.setProperty('--intro-progress',Math.min(1,Math.max(0,introTravel/Math.max(1,viewport))).toFixed(3));
-      let closest=Infinity,active=-1;
-      items.forEach((item,i)=>{const r=item.getBoundingClientRect(),mid=(mobile?r.top:r.top-panelRect.top)+r.height/2,distance=Math.abs(mid-center),proximity=Math.max(0,1-distance/(viewport*.65));const focus=proximity*proximity*(3-2*proximity),smallW=Math.min(panel.clientWidth*.46,430),fullH=mobile?r.height:viewport,smallH=Math.min(fullH*.62,570);item.style.setProperty('--focus',focus.toFixed(3));item.style.setProperty('--card-w',`${Math.round(smallW+(panel.clientWidth-smallW)*focus)}px`);item.style.setProperty('--card-h',`${Math.round(smallH+(fullH-smallH)*focus)}px`);item.style.setProperty('--label-opacity',Math.max(0,Math.min(1,(focus-.55)*3)).toFixed(3));if(distance<closest){closest=distance;active=i}});
+      let closest=Infinity,active=-1,activeFocus=0;
+      items.forEach((item,i)=>{const r=item.getBoundingClientRect(),mid=(mobile?r.top:r.top-panelRect.top)+r.height/2,distance=Math.abs(mid-center),proximity=Math.max(0,1-distance/(viewport*.65));const focus=proximity*proximity*(3-2*proximity),smallW=Math.min(panel.clientWidth*.46,430),fullH=mobile?r.height:viewport,smallH=Math.min(fullH*.62,570);item.style.setProperty('--focus',focus.toFixed(3));item.style.setProperty('--card-w',`${Math.round(smallW+(panel.clientWidth-smallW)*focus)}px`);item.style.setProperty('--card-h',`${Math.round(smallH+(fullH-smallH)*focus)}px`);item.style.setProperty('--label-opacity',Math.max(0,Math.min(1,(focus-.48)*3)).toFixed(3));if(distance<closest){closest=distance;active=i;activeFocus=focus}});
       const selected=(mobile?introRect.bottom>viewport*.55:panel.scrollTop<intro.offsetHeight*.55)?-1:active;
       items.forEach((item,i)=>item.classList.toggle('is-current',i===selected));rail.textContent=selected<0?'00':String(selected+1).padStart(2,'0');
       document.querySelectorAll('.rail-lines i').forEach((n,i)=>n.classList.toggle('active',i===selected));scrollFrame=0;
+      const expansion=!mobile&&!reduced&&selected>=0?Math.max(0,Math.min(1,(activeFocus-.82)/.18)):0;
+      if(selected>=0&&selected!==spotlightIndex){spotlightIndex=selected;const p=projects[selected];spotlight.querySelector('.spotlight-image').style.backgroundImage=`url("${safe(p.image)}")`;spotlight.querySelector('.spotlight-content').innerHTML=`<span class="spotlight-label mono">SELECTED WORK / ${esc(p.number)}</span>${projectRows(selected)}<span class="spotlight-footer mono">SCROLL TO EXPLORE &nbsp; ↓</span>`}
+      spotlight.style.opacity=String(expansion);
+      spotlight.style.clipPath=`inset(8px 8px 8px ${Math.round((panelRect.left+8)*(1-expansion)+8*expansion)}px round 7px)`;
     };
-    panel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true});window.addEventListener('resize',update);
-    window.addEventListener('scroll',()=>{if(matchMedia('(max-width:650px)').matches&&!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true});
-    if(matchMedia('(hover:hover) and (pointer:fine)').matches){panel.addEventListener('pointermove',e=>{cursor.style.left=`${e.clientX}px`;cursor.style.top=`${e.clientY}px`;cursor.classList.add('visible')},{passive:true});panel.addEventListener('pointerleave',()=>cursor.classList.remove('visible'))}
+    panel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true,signal});window.addEventListener('resize',update,{signal});
+    window.addEventListener('scroll',()=>{if(matchMedia('(max-width:650px)').matches&&!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true,signal});
+    if(matchMedia('(hover:hover) and (pointer:fine)').matches){panel.addEventListener('pointermove',e=>{cursor.style.left=`${e.clientX}px`;cursor.style.top=`${e.clientY}px`;cursor.classList.add('visible')},{passive:true,signal});panel.addEventListener('pointerleave',()=>cursor.classList.remove('visible'),{signal})}
     update();
   }
   function initPreviews(){
@@ -85,5 +102,10 @@
     dialog.querySelector('.close-preview').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
   }
   window.addEventListener('hashchange',render);render();
-  const loader=document.getElementById('intro-loader');if(loader)setTimeout(()=>loader.classList.add('is-done'),reduced?0:900);
+  const loader=document.getElementById('intro-loader');
+  if(loader){
+    const progress=loader.querySelector('.loader-progress'),start=performance.now(),duration=reduced?100:1750;
+    const tick=now=>{const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,2.2);if(progress)progress.textContent=String(Math.round(eased*100)).padStart(3,'0');if(t<1)requestAnimationFrame(tick);else setTimeout(()=>loader.classList.add('is-done'),140)};
+    requestAnimationFrame(tick);
+  }
 })();
