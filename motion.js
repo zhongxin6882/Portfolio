@@ -152,11 +152,11 @@ window.FolioMotion = (() => {
           tile.addEventListener('pointerenter', grow); tile.addEventListener('pointerleave', shrink);
           tile.addEventListener('focus', grow); tile.addEventListener('blur', shrink);
           cleanups.push(() => { tile.removeEventListener('pointerenter', grow); tile.removeEventListener('pointerleave', shrink); tile.removeEventListener('focus', grow); tile.removeEventListener('blur', shrink); });
-          gsap.fromTo(tile, { scale: .72, y: 40, opacity: .62, transformOrigin: 'center center' }, {
-            scale: 1, y: 0, opacity: 1, ease: 'none',
-            scrollTrigger: { ...scroll(tile, 'top 98%', 'top 40%'), scrub: .55 }
+          gsap.fromTo(tile, { scale: .88, y: 20, autoAlpha: 0, transformOrigin: 'center center' }, {
+            scale: 1, y: 0, autoAlpha: 1, duration: .72, ease: 'power3.out',
+            scrollTrigger: { ...scroll(tile, 'top 95%'), once: true },
+            onComplete: () => gsap.set(tile, { clearProps: 'transform,opacity,visibility' })
           });
-          gsap.fromTo(image, { yPercent: 7 }, { yPercent: -5, ease: 'none', scrollTrigger: { ...scroll(tile, 'top bottom', 'bottom top'), scrub: .7 } });
         });
         const copy = root.querySelector('.play-copy');
         if (tiles[6] && !conditions.mobile) gsap.to(copy, {
