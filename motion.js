@@ -37,7 +37,8 @@ window.FolioMotion = (() => {
     if (label) label.textContent = digits;
     document.querySelectorAll('.count-reel').forEach((reel, index) => {
       const digit = Number(digits[index]);
-      gsap.to(reel, { y: `-${digit}em`, duration: noMotion() ? 0 : .7, ease: 'power3.inOut', overwrite: true });
+      const opening = document.getElementById('intro-loader')?.classList.contains('is-done') === false;
+      gsap.to(reel, { y: `-${digit}em`, duration: noMotion() ? 0 : .7, delay: opening && !noMotion() ? 2.3 : 0, ease: 'power3.inOut', overwrite: true });
     });
   }
 
@@ -47,7 +48,7 @@ window.FolioMotion = (() => {
     const context = gsap.context(() => {
       if (reduced) return;
       const loaderActive = document.getElementById('intro-loader')?.classList.contains('is-done') === false;
-      const entrance = gsap.timeline({ delay: loaderActive ? 1.8 : .06, defaults: { ease: 'power3.out' } });
+      const entrance = gsap.timeline({ delay: loaderActive ? 2.25 : .06, defaults: { ease: 'power3.out' } });
       entrance.from(query(root, '.nav-links a, .mail-link'), { y: -18, autoAlpha: 0, stagger: .065, duration: .55 });
       entrance.from(query(root, '.left-top, .left-bottom button'), { y: 14, autoAlpha: 0, stagger: .09, duration: .5 }, '<+.12');
 
