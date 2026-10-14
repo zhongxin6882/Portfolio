@@ -141,5 +141,25 @@
 .project-reference p{font-size:13px;line-height:1.55;margin:10px 0 12px}.project-reference a{font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}.project-reference a:hover{color:var(--accent)}
 .project-frame figcaption a:hover,.preview-source:hover{color:var(--accent)}
 .preview-source{display:inline-block;margin-top:12px;font-size:10px;text-decoration:underline;text-underline-offset:4px}
+.preview-source[hidden]{display:none}
 .next-credit{position:absolute;z-index:1;right:6%;bottom:5%;font-size:9px;color:#fff}
 @media(max-width:650px){.cover-credit{top:8px;right:8px;padding:6px;font-size:7px}.project-reference{margin:-10px 0 12px}}
+/* PLAYGROUND: title reveal, rolling shot index, and scroll focused cards. */
+.left-playground{margin-top:0;position:static;align-self:stretch;padding:0 clamp(26px,4.5vw,72px)}
+.play-kicker{position:absolute;top:15%;color:var(--muted);letter-spacing:.1em}
+.left-playground .play-title{position:absolute;top:22%;left:clamp(26px,4.5vw,72px);right:5%;font-size:clamp(53px,5.1vw,85px);line-height:1.05;letter-spacing:-.09em;white-space:nowrap;overflow:hidden;margin:0}
+.play-title span{display:inline-block;transform-origin:center bottom}
+.left-playground p{position:absolute;top:36%;left:clamp(26px,4.5vw,72px);right:9%;max-width:430px}
+.play-counter{position:absolute;right:7%;bottom:13%;display:flex;flex-direction:column;align-items:flex-end}
+.play-digits{display:flex;height:1em;overflow:hidden;font-size:clamp(100px,12vw,205px);font-weight:600;line-height:1;letter-spacing:-.1em;font-variant-numeric:tabular-nums}
+.play-digit-window{display:block;overflow:hidden;width:.63em;height:1em}
+.play-reel{display:flex;flex-direction:column}
+.play-reel span{display:block;height:1em;line-height:1}
+.play-counter-caption{font-size:10px;letter-spacing:.12em;color:var(--muted);margin-top:9px}
+.play-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:86px 18px 70px;overflow:visible}
+.play-tile{transform-origin:center center;will-change:transform,opacity;box-shadow:0 10px 26px #15151518}
+.play-tile:hover,.play-tile:focus-visible{z-index:3!important;outline:2px solid var(--accent);outline-offset:3px}
+.play-tile span{opacity:1;background:linear-gradient(transparent,#0009);left:0;right:0;bottom:0;padding:24px 13px 12px;color:white;font-size:9px}
+@media(max-width:900px){.left-playground .play-title{font-size:clamp(42px,5.2vw,70px)}.play-digits{font-size:clamp(80px,11vw,160px)}.play-grid{gap:7px;padding-left:10px;padding-right:10px}}
+@media(max-width:650px){.left-playground{margin-top:0;padding:0}.play-kicker{top:12%;left:20px;font-size:8px}.left-playground .play-title{top:22%;left:20px;font-size:46px}.left-playground p{top:43%;left:20px;font-size:11px}.play-counter{right:7%;bottom:12%}.play-digits{font-size:72px}.play-counter-caption{font-size:8px}.play-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:66px 5px 35px;gap:6px}.play-tile:nth-child(5n+2){grid-column:span 2;aspect-ratio:2.1}.play-tile:nth-child(5n+3){grid-row:span 2;aspect-ratio:auto}.play-tile span{font-size:7px;padding:18px 7px 7px}}
+@media(prefers-reduced-motion:reduce){.play-tile{will-change:auto}}
