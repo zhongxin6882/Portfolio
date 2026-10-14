@@ -4,7 +4,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safe=u=>/^(assets\/|https:\/\/|mailto:)/.test(u||'')?esc(u):'#';
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort,projectKeyHandler;
+  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort,projectKeyHandler,motionCleanup;
   document.body.classList.toggle('dark',dark);
   function route(){
     const parts=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
@@ -36,10 +36,10 @@
   function about(){return `<div class="about-content"><h1>${esc(data.aboutTitle).replace('\n','<br>')}</h1><div class="about-row"><span class="mono">INFO</span><div>${data.about.map(s=>`<p>${esc(s)}</p>`).join('')}</div></div><div class="about-row"><span class="mono">EXPERIENCES</span><div>${data.experience.map(e=>`<div class="experience"><time>${esc(e.period)}</time><span>${esc(e.label)}</span></div>`).join('')}</div></div><div class="about-row"><span class="mono">CAPABILITIES</span><div class="chips">${data.focus.map(s=>`<span>${esc(s)}</span>`).join('')}</div></div>${data.email||data.social.length?`<div class="about-row"><span class="mono">LET'S TALK</span><div>${data.email?`<a class="big-mail" href="mailto:${esc(data.email)}">${esc(data.email)} ↗</a>`:''}<div class="socials">${data.social.map(s=>`<a href="${safe(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a>`).join('')}</div></div></div>`:''}</div>`}
   function playground(){const tiles=[projects[2],projects[0],projects[1],projects[3],projects[0],projects[2],projects[3],projects[1]];return `<div class="play-grid" aria-label="设计实验">${tiles.map((p,i)=>`<button class="play-tile play-tile-${i%5}" data-preview="${esc(p.id)}" type="button" aria-label="预览 ${esc(p.title)}">${image(p)}<span class="mono">0${i+1} / ${esc(p.category)}</span></button>`).join('')}</div><dialog id="preview-dialog" class="preview-dialog"><button class="close-preview mono" aria-label="关闭预览" type="button">CLOSE ×</button><div class="preview-image"></div><div class="preview-caption"></div></dialog>`}
   function closeProject(){
-    document.getElementById('project-view')?.remove();
+    const view=document.getElementById('project-view');if(!view)return;
     if(projectKeyHandler){window.removeEventListener('keydown',projectKeyHandler);projectKeyHandler=null}
-    document.body.classList.remove('project-open');
-    if(route().page==='detail')location.hash='#/';
+    const done=()=>{view.remove();document.body.classList.remove('project-open');if(route().page==='detail')location.hash='#/'};
+    if(window.FolioMotion)window.FolioMotion.projectClose(view,done);else done();
   }
   function showProject(p,fromDeepLink=false){
     document.getElementById('project-view')?.remove();
@@ -49,6 +49,7 @@
     const view=document.createElement('div');view.id='project-view';view.className='project-view';view.setAttribute('role','dialog');view.setAttribute('aria-modal','true');view.setAttribute('aria-label',`${p.title} 项目详情`);
     view.innerHTML=`<section class="project-info"><div class="project-info-top mono">PROJECT ${esc(p.number)} / 0${timeline.length} <span>${esc(p.year)}</span></div><div class="project-info-body"><p class="mono project-kicker">SELECTED WORK / ${esc(p.category)}</p><h1>${esc(p.title)}</h1><p class="project-summary">${esc(p.summary)}</p><div class="project-facts"><div><span>YEAR</span><strong>${esc(p.year)}</strong></div><div><span>TYPE</span><strong>${esc(p.category)}</strong></div><div><span>ROLE</span><strong>${esc(p.role||'设计')}</strong></div><div><span>INDUSTRY</span><strong>${esc(p.sector||'—')}</strong></div></div></div><span class="project-info-foot mono">SCROLL TO EXPLORE ↓</span></section><section class="project-media" tabindex="0" aria-label="${esc(p.title)} 项目图片，可滚动"><div class="project-media-inner"><div class="project-media-heading mono"><span>${esc(p.title)} / IMAGE INDEX</span><span>${String(gallery.length).padStart(2,'0')} FRAMES</span></div><div class="project-image-grid">${gallery.map((item,i)=>`<figure class="project-frame ${item.layout==='pair'?'pair':'wide'}"><img src="${safe(item.src)}" alt="${esc(p.title)} 项目画面 ${i+1}：${esc(item.caption||'')}" loading="${i===0?'eager':'lazy'}"><figcaption class="mono"><span>${String(i+1).padStart(2,'0')} / ${String(gallery.length).padStart(2,'0')}</span><span>${esc(item.caption||'')}</span></figcaption></figure>`).join('')}</div><button class="project-next" type="button" data-next="${esc(next.id)}" aria-label="查看下一个项目 ${esc(next.title)}"><span class="mono">NEXT PROJECT ↗ <b>${esc(next.year)}</b></span><img src="${safe(next.image)}" alt="${esc(next.title)} 项目封面" loading="lazy"><span class="project-next-name">${esc(next.title)}</span></button></div></section><button class="project-close mono" type="button" aria-label="关闭项目详情">×</button>`;
     root.appendChild(view);document.body.classList.add('project-open');
+    window.FolioMotion?.projectOpen(view);
     view.querySelector('.project-close').addEventListener('click',closeProject);
     view.querySelector('.project-next').addEventListener('click',()=>showProject(next));
     projectKeyHandler=e=>{if(e.key==='Escape')closeProject()};window.addEventListener('keydown',projectKeyHandler);
@@ -57,6 +58,7 @@
   }
   function render(){
     cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);
+    motionCleanup?.();motionCleanup=null;
     galleryAbort?.abort();galleryAbort=null;
     if(projectKeyHandler){window.removeEventListener('keydown',projectKeyHandler);projectKeyHandler=null}document.body.classList.remove('project-open');
     const current=route(),page=current.page;
@@ -69,6 +71,7 @@
     if(page==='work'||page==='detail')initClock();
     if(page==='playground')initPreviews();
     if(page==='detail')showProject(current.project,true);
+    motionCleanup=window.FolioMotion?.init(root,page);
     if(!reduced){const wipe=document.getElementById('page-wipe');wipe.classList.add('wipe-active')}
   }
   function toggleTheme(){dark=!dark;document.body.classList.toggle('dark',dark);localStorage.setItem('folio-theme',dark?'dark':'light');const b=document.getElementById('theme-toggle');b.setAttribute('aria-pressed',String(dark));b.querySelector('span').textContent=`${dark?'NORMAL':'INVERT'} COLOR`}
@@ -108,7 +111,7 @@
       const selected=introRect.bottom>(mobile?viewport*.55:panelRect.top+viewport*.55)?-1:active;
       items.forEach((item,i)=>item.classList.toggle('is-current',i===selected));rail.textContent=selected<0?'00':String(selected+1).padStart(2,'0');
       const count=selected<0?timeline.length:Number(timeline[selected].number)||selected+1;
-      const label=document.getElementById('work-count-label');if(label&&label.textContent!==String(count).padStart(2,'0')){label.textContent=String(count).padStart(2,'0');document.querySelectorAll('.count-reel').forEach((reel,i)=>{reel.style.setProperty('--digit',String(i===0?Math.floor(count/10):count%10))})}
+      const label=document.getElementById('work-count-label');if(label&&label.textContent!==String(count).padStart(2,'0')){if(window.FolioMotion)window.FolioMotion.count(count,label);else{label.textContent=String(count).padStart(2,'0');document.querySelectorAll('.count-reel').forEach((reel,i)=>reel.style.setProperty('--digit',String(i===0?Math.floor(count/10):count%10)))}}
       document.querySelectorAll('.rail-lines i').forEach((n,i)=>n.classList.toggle('active',i===selected));scrollFrame=0;
     };
     panel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true,signal});window.addEventListener('resize',update,{signal});
@@ -128,8 +131,9 @@
   window.addEventListener('hashchange',render);render();
   const loader=document.getElementById('intro-loader');
   if(loader){
-    const progress=loader.querySelector('.loader-progress'),start=performance.now(),duration=reduced?100:1750;
-    const tick=now=>{const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,2.2);if(progress)progress.textContent=String(Math.round(eased*100)).padStart(3,'0');if(t<1)requestAnimationFrame(tick);else setTimeout(()=>loader.classList.add('is-done'),140)};
-    requestAnimationFrame(tick);
+    if(window.FolioMotion)window.FolioMotion.loader(loader);
+    else{const progress=loader.querySelector('.loader-progress'),start=performance.now(),duration=reduced?100:1750;
+      const tick=now=>{const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,2.2);if(progress)progress.textContent=String(Math.round(eased*100)).padStart(3,'0');if(t<1)requestAnimationFrame(tick);else setTimeout(()=>loader.classList.add('is-done'),140)};
+      requestAnimationFrame(tick)}
   }
 })();
