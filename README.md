@@ -6,6 +6,8 @@
 - 修改布局与动效：`styles.css`、`app.js`
 - 替换图片：`assets/`
 
+动画使用项目内的 GSAP 3.15.0 与 ScrollTrigger。`motion.js` 管理入场、滚动和详情切换；`assets/vendor/` 中的运行文件随 GitHub Pages 一起部署，无需外部 CDN。升级时运行 `npm install`，再运行 `npm run vendor:gsap` 将依赖复制到静态资源目录。`npm run check` 可检查脚本语法。系统开启“减少动态效果”后会跳过主要 GSAP 动画。
+
 ## 添加与排版项目图片
 
 1. 将图片放入 `assets/`（例如 `assets/my-project-01.webp`）。
