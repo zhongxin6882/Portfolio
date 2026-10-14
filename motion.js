@@ -32,16 +32,6 @@ window.FolioMotion = (() => {
       }, 1.55);
   }
 
-  function count(value, label) {
-    const digits = String(Math.max(0, Math.min(99, value))).padStart(2, '0');
-    if (label) label.textContent = digits;
-    document.querySelectorAll('.count-reel').forEach((reel, index) => {
-      const digit = Number(digits[index]);
-      const opening = document.getElementById('intro-loader')?.classList.contains('is-done') === false;
-      gsap.to(reel, { y: `-${digit}em`, duration: noMotion() ? 0 : .7, delay: opening && !noMotion() ? 2.3 : 0, ease: 'power3.inOut', overwrite: true });
-    });
-  }
-
   function init(root, page) {
     const panel = root.querySelector('#main');
     const reduced = noMotion();
@@ -53,11 +43,9 @@ window.FolioMotion = (() => {
       entrance.from(query(root, '.left-top, .left-bottom button'), { y: 14, autoAlpha: 0, stagger: .09, duration: .5 }, '<+.12');
 
       if (page === 'work' || page === 'detail') {
-        entrance.from(query(root, '.work-eyebrow, .work-copy p'), { y: 18, autoAlpha: 0, stagger: .12, duration: .7 }, '<');
-        entrance.from(query(root, '.work-title span'), { yPercent: 110, autoAlpha: 0, stagger: .075, duration: .8 }, '<+.08');
-        entrance.from(query(root, '.work-left .orbit-clock, .work-count'), { y: 30, autoAlpha: 0, stagger: .1, duration: .75 }, '<+.13');
+        entrance.from(query(root, '.orbit-clock'), { scale: .93, autoAlpha: 0, duration: .8 }, '<');
         entrance.from(query(root, '.intro-heading span, .intro-hint'), { y: 15, autoAlpha: 0, stagger: .08, duration: .65 }, '<');
-        entrance.from(query(root, '.mosaic-card img'), { scale: 1.16, autoAlpha: 0, stagger: .06, duration: .85 }, '<+.08');
+        entrance.from(query(root, '.collage-image img'), { scale: 1.12, autoAlpha: 0, stagger: .07, duration: .75 }, '<+.08');
       } else if (page === 'about') {
         entrance.from(query(root, '.left-message, .about-content h1'), { y: 32, autoAlpha: 0, stagger: .1, duration: .85 }, '<');
       } else {
@@ -77,16 +65,6 @@ window.FolioMotion = (() => {
         ({ trigger, scroller, start, end });
 
       if (page === 'work' || page === 'detail') {
-        const intro = root.querySelector('.gallery-intro');
-        const cards = query(root, '.mosaic-card');
-        if (intro && cards.length) {
-          const offsets = [-125, -235, -80, -115, -260, -180, -320, -95];
-          gsap.to(cards, {
-            y: index => offsets[index] || -110,
-            ease: 'none',
-            scrollTrigger: { ...scroll(intro, 'top top', 'bottom bottom'), scrub: .65 }
-          });
-        }
         query(root, '.gallery-item').forEach(item => {
           const image = item.querySelector('.gallery-image');
           if (image) gsap.fromTo(image, { scale: 1.1, yPercent: 4 }, {
@@ -138,5 +116,5 @@ window.FolioMotion = (() => {
     gsap.to(view, { y: 22, autoAlpha: 0, duration: .28, ease: 'power2.in', onComplete: done });
   }
 
-  return { loader, count, init, projectOpen, projectClose };
+  return { loader, init, projectOpen, projectClose };
 })();
