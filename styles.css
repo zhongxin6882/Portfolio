@@ -168,3 +168,10 @@
 .motion-ready .work-title span,.motion-ready .loader-eyebrow,.motion-ready .loader-word,.motion-ready .loader-cat,.motion-ready .project-view{animation:none}
 .motion-ready #intro-loader,.motion-ready .count-reel{transition:none}
 .motion-ready .mosaic-card{transform:none;transition:filter .25s}
+.cover-credit{position:absolute;z-index:3;right:14px;top:14px;max-width:calc(100% - 28px);padding:8px 10px;background:#10171cd9;color:white;text-align:right;text-shadow:none;pointer-events:none;font-size:9px;letter-spacing:.08em}
+.project-reference{border-top:1px solid var(--line);padding:19px 0 24px;margin:-20px 0 20px;color:var(--muted)}
+.project-reference p{font-size:13px;line-height:1.55;margin:10px 0 12px}.project-reference a{font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}.project-reference a:hover{color:var(--accent)}
+.project-frame figcaption a:hover,.preview-source:hover{color:var(--accent)}
+.preview-source{display:inline-block;margin-top:12px;font-size:10px;text-decoration:underline;text-underline-offset:4px}
+.next-credit{position:absolute;z-index:1;right:6%;bottom:5%;font-size:9px;color:#fff}
+@media(max-width:650px){.cover-credit{top:8px;right:8px;padding:6px;font-size:7px}.project-reference{margin:-10px 0 12px}}
