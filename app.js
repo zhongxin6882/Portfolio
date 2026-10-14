@@ -4,7 +4,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safe=u=>/^(assets\/|https:\/\/|mailto:)/.test(u||'')?esc(u):'#';
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort;
+  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort,projectKeyHandler;
   document.body.classList.toggle('dark',dark);
   function route(){
     const parts=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
@@ -30,23 +30,44 @@
     }).join('')}</span>`;
   }
   function work(){
-    return `<section class="gallery-intro" aria-label="精选作品集合"><div class="intro-heading mono"><span>SELECTED WORK / ${timeline.length} PROJECTS</span><span>${esc(timeline[0]?.year||'')} — ${esc(timeline[timeline.length-1]?.year||'')}</span></div><div class="collage">${timeline.map((p,i)=>`<a class="collage-image collage-${i+1}" href="#/work/${encodeURIComponent(p.id)}" aria-label="查看 ${esc(p.title)}">${image(p)}<span class="collage-caption mono">${esc(p.number)} / ${esc(p.category)}</span></a>`).join('')}</div><div class="intro-hint mono">SCROLL FOR TIMELINE <span>↓</span></div></section><div class="gallery" role="list" aria-label="按时间倒序的精选作品">${timeline.map((p,i)=>`<section class="gallery-item" role="listitem" data-index="${i}"><a class="gallery-image-link" href="#/work/${encodeURIComponent(p.id)}" aria-label="查看 ${esc(p.title)} 项目详情">${image(p,'gallery-image')}<span class="gallery-dim"></span><span class="gallery-overlay"><span class="gallery-index mono">${esc(p.number)} / 0${timeline.length}</span>${projectRows(i)}<span class="gallery-more mono">VIEW PROJECT ↗</span></span></a></section>`).join('')}</div><div class="gallery-end"><span class="mono">END OF SELECTED WORK</span><a href="#/about">GET TO KNOW ME ↗</a></div><div class="project-rail" aria-hidden="true"><span id="rail-count">00</span><div class="rail-lines">${timeline.map(()=>'<i></i>').join('')}</div><span>0${timeline.length}</span></div><div class="cursor-marker" aria-hidden="true"></div>`;
+    return `<section class="gallery-intro" aria-label="精选作品集合"><div class="intro-heading mono"><span>SELECTED WORK / ${timeline.length} PROJECTS</span><span>${esc(timeline[0]?.year||'')} — ${esc(timeline[timeline.length-1]?.year||'')}</span></div><div class="collage">${timeline.map((p,i)=>`<button class="collage-image collage-${i+1}" data-jump="${i}" type="button" aria-label="展开 ${esc(p.title)} 封面">${image(p)}<span class="collage-caption mono">${esc(p.number)} / ${esc(p.category)}</span></button>`).join('')}</div><div class="intro-hint mono">SCROLL FOR TIMELINE <span>↓</span></div></section><div class="gallery" role="list" aria-label="按时间倒序的精选作品">${timeline.map((p,i)=>`<section class="gallery-item" role="listitem" data-index="${i}"><button class="gallery-image-link" data-cover="${i}" type="button" aria-label="展开 ${esc(p.title)} 封面，再次点击查看详情">${image(p,'gallery-image')}<span class="gallery-dim"></span><span class="gallery-overlay"><span class="gallery-index mono">${esc(p.number)} / 0${timeline.length}</span>${projectRows(i)}<span class="gallery-more mono">CLICK FOR DETAILS ↗</span></span></button></section>`).join('')}</div><div class="gallery-end"><span class="mono">END OF SELECTED WORK</span><a href="#/about">GET TO KNOW ME ↗</a></div><div class="project-rail" aria-hidden="true"><span id="rail-count">00</span><div class="rail-lines">${timeline.map(()=>'<i></i>').join('')}</div><span>0${timeline.length}</span></div><div class="cursor-marker" aria-hidden="true"></div>`;
   }
   function about(){return `<div class="about-content"><h1>${esc(data.aboutTitle).replace('\n','<br>')}</h1><div class="about-row"><span class="mono">INFO</span><div>${data.about.map(s=>`<p>${esc(s)}</p>`).join('')}</div></div><div class="about-row"><span class="mono">EXPERIENCES</span><div>${data.experience.map(e=>`<div class="experience"><time>${esc(e.period)}</time><span>${esc(e.label)}</span></div>`).join('')}</div></div><div class="about-row"><span class="mono">CAPABILITIES</span><div class="chips">${data.focus.map(s=>`<span>${esc(s)}</span>`).join('')}</div></div>${data.email||data.social.length?`<div class="about-row"><span class="mono">LET'S TALK</span><div>${data.email?`<a class="big-mail" href="mailto:${esc(data.email)}">${esc(data.email)} ↗</a>`:''}<div class="socials">${data.social.map(s=>`<a href="${safe(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a>`).join('')}</div></div></div>`:''}</div>`}
   function playground(){const tiles=[projects[2],projects[0],projects[1],projects[3],projects[0],projects[2],projects[3],projects[1]];return `<div class="play-grid" aria-label="设计实验">${tiles.map((p,i)=>`<button class="play-tile play-tile-${i%5}" data-preview="${esc(p.id)}" type="button" aria-label="预览 ${esc(p.title)}">${image(p)}<span class="mono">0${i+1} / ${esc(p.category)}</span></button>`).join('')}</div><dialog id="preview-dialog" class="preview-dialog"><button class="close-preview mono" aria-label="关闭预览" type="button">CLOSE ×</button><div class="preview-image"></div><div class="preview-caption"></div></dialog>`}
-  function detail(p){const next=projects[(projects.indexOf(p)+1)%projects.length];return `<article class="detail-content"><a class="back-link mono" href="#/">← BACK TO WORK</a><span class="mono detail-index">PROJECT ${esc(p.number)} / ${esc(p.year)}</span><h1>${esc(p.title)}</h1><p class="detail-summary">${esc(p.summary)}</p><div class="detail-hero">${image(p)}</div><div class="about-row"><span class="mono">PROJECT TYPE</span><p>${esc(p.category)}</p></div><div class="about-row"><span class="mono">EXPLORATION</span><div><p>${esc(p.summary)}</p><div class="chips">${p.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div></div></div><div class="about-row"><span class="mono">NOTE</span><p>这是可编辑的作品集示例。你可以在 content.js 中替换项目背景、过程、成果和封面图片。</p></div><div class="detail-next"><a href="#/">← ALL WORK</a><a href="#/work/${encodeURIComponent(next.id)}">NEXT PROJECT ↗</a></div></article>`}
+  function closeProject(){
+    document.getElementById('project-view')?.remove();
+    if(projectKeyHandler){window.removeEventListener('keydown',projectKeyHandler);projectKeyHandler=null}
+    document.body.classList.remove('project-open');
+    if(route().page==='detail')location.hash='#/';
+  }
+  function showProject(p,fromDeepLink=false){
+    document.getElementById('project-view')?.remove();
+    if(projectKeyHandler)window.removeEventListener('keydown',projectKeyHandler);
+    const next=timeline[(timeline.indexOf(p)+1)%timeline.length];
+    const gallery=(p.gallery?.length?p.gallery:[{src:p.image,layout:'wide',caption:p.title}]);
+    const view=document.createElement('div');view.id='project-view';view.className='project-view';view.setAttribute('role','dialog');view.setAttribute('aria-modal','true');view.setAttribute('aria-label',`${p.title} 项目详情`);
+    view.innerHTML=`<section class="project-info"><div class="project-info-top mono">PROJECT ${esc(p.number)} / 0${timeline.length} <span>${esc(p.year)}</span></div><div class="project-info-body"><p class="mono project-kicker">SELECTED WORK / ${esc(p.category)}</p><h1>${esc(p.title)}</h1><p class="project-summary">${esc(p.summary)}</p><div class="project-facts"><div><span>YEAR</span><strong>${esc(p.year)}</strong></div><div><span>TYPE</span><strong>${esc(p.category)}</strong></div><div><span>ROLE</span><strong>${esc(p.role||'设计')}</strong></div><div><span>INDUSTRY</span><strong>${esc(p.sector||'—')}</strong></div></div></div><span class="project-info-foot mono">SCROLL TO EXPLORE ↓</span></section><section class="project-media" tabindex="0" aria-label="${esc(p.title)} 项目图片，可滚动"><div class="project-media-inner"><div class="project-media-heading mono"><span>${esc(p.title)} / IMAGE INDEX</span><span>${String(gallery.length).padStart(2,'0')} FRAMES</span></div><div class="project-image-grid">${gallery.map((item,i)=>`<figure class="project-frame ${item.layout==='pair'?'pair':'wide'}"><img src="${safe(item.src)}" alt="${esc(p.title)} 项目画面 ${i+1}：${esc(item.caption||'')}" loading="${i===0?'eager':'lazy'}"><figcaption class="mono"><span>${String(i+1).padStart(2,'0')} / ${String(gallery.length).padStart(2,'0')}</span><span>${esc(item.caption||'')}</span></figcaption></figure>`).join('')}</div><button class="project-next" type="button" data-next="${esc(next.id)}" aria-label="查看下一个项目 ${esc(next.title)}"><span class="mono">NEXT PROJECT ↗ <b>${esc(next.year)}</b></span><img src="${safe(next.image)}" alt="${esc(next.title)} 项目封面" loading="lazy"><span class="project-next-name">${esc(next.title)}</span></button></div></section><button class="project-close mono" type="button" aria-label="关闭项目详情">×</button>`;
+    root.appendChild(view);document.body.classList.add('project-open');
+    view.querySelector('.project-close').addEventListener('click',closeProject);
+    view.querySelector('.project-next').addEventListener('click',()=>showProject(next));
+    projectKeyHandler=e=>{if(e.key==='Escape')closeProject()};window.addEventListener('keydown',projectKeyHandler);
+    view.querySelector('.project-close').focus({preventScroll:true});
+    if(fromDeepLink){const index=timeline.indexOf(p);document.querySelector(`.gallery-item[data-index="${index}"]`)?.classList.add('is-locked')}
+  }
   function render(){
     cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);
     galleryAbort?.abort();galleryAbort=null;
+    if(projectKeyHandler){window.removeEventListener('keydown',projectKeyHandler);projectKeyHandler=null}document.body.classList.remove('project-open');
     const current=route(),page=current.page;
     document.title=`${page==='work'?'作品':page==='detail'?current.project.title:page==='about'?'关于':'实验室'} — ${data.name}`;
-    root.innerHTML=`<div class="site">${left(page)}<main class="panel right-panel" id="main" tabindex="-1">${nav(page)}${page==='work'?work():page==='about'?about():page==='playground'?playground():detail(current.project)}</main></div><div id="page-wipe" aria-hidden="true"></div>`;
+    root.innerHTML=`<div class="site">${left(page)}<main class="panel right-panel" id="main" tabindex="-1">${nav(page)}${page==='work'||page==='detail'?work():page==='about'?about():playground()}</main></div><div id="page-wipe" aria-hidden="true"></div>`;
     document.getElementById('theme-toggle').addEventListener('click',toggleTheme);
     document.getElementById('sound-toggle').addEventListener('click',toggleSound);
     document.querySelectorAll('a,button').forEach(el=>el.addEventListener('click',ping));
-    if(page==='work')initGallery();
+    if(page==='work'||page==='detail')initGallery();
     if(page==='work'||page==='detail')initClock();
     if(page==='playground')initPreviews();
+    if(page==='detail')showProject(current.project,true);
     if(!reduced){const wipe=document.getElementById('page-wipe');wipe.classList.add('wipe-active')}
   }
   function toggleTheme(){dark=!dark;document.body.classList.toggle('dark',dark);localStorage.setItem('folio-theme',dark?'dark':'light');const b=document.getElementById('theme-toggle');b.setAttribute('aria-pressed',String(dark));b.querySelector('span').textContent=`${dark?'NORMAL':'INVERT'} COLOR`}
@@ -87,8 +108,12 @@
       document.querySelectorAll('.rail-lines i').forEach((n,i)=>n.classList.toggle('active',i===selected));scrollFrame=0;
     };
     panel.addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true,signal});window.addEventListener('resize',update,{signal});
+    panel.addEventListener('wheel',()=>items.forEach(item=>item.classList.remove('is-locked')),{passive:true,signal});panel.addEventListener('touchstart',()=>items.forEach(item=>item.classList.remove('is-locked')),{passive:true,signal});
     window.addEventListener('scroll',()=>{if(matchMedia('(max-width:650px)').matches&&!scrollFrame)scrollFrame=requestAnimationFrame(update)},{passive:true,signal});
     if(matchMedia('(hover:hover) and (pointer:fine)').matches){panel.addEventListener('pointermove',e=>{cursor.style.left=`${e.clientX}px`;cursor.style.top=`${e.clientY}px`;cursor.classList.add('visible')},{passive:true,signal});panel.addEventListener('pointerleave',()=>cursor.classList.remove('visible'),{signal})}
+    const lock=i=>{items.forEach(item=>item.classList.remove('is-locked'));const item=items[i];if(!item)return;item.classList.add('is-locked');item.querySelector('.gallery-image-link').setAttribute('aria-label',`查看 ${timeline[i].title} 项目详情`);item.scrollIntoView({behavior:reduced?'instant':'smooth',block:'center'});update()};
+    panel.querySelectorAll('[data-cover]').forEach(btn=>btn.addEventListener('click',()=>{const i=Number(btn.dataset.cover);if(items[i].classList.contains('is-locked'))showProject(timeline[i]);else lock(i)},{signal}));
+    panel.querySelectorAll('[data-jump]').forEach(btn=>btn.addEventListener('click',()=>lock(Number(btn.dataset.jump)),{signal}));
     update();
   }
   function initPreviews(){
