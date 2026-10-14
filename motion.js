@@ -8,6 +8,7 @@ window.FolioMotion = (() => {
 
   const noMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const query = (scope, selector) => [...scope.querySelectorAll(selector)];
+  let counterRolled = false;
 
   function rollPlay(root, value) {
     const label = root.querySelector('#play-count-label');
@@ -15,8 +16,9 @@ window.FolioMotion = (() => {
     if (!label || label.textContent === digits) return;
     label.textContent = digits;
     query(root, '.play-reel').forEach((reel, index) => {
-      gsap.to(reel, { y: `-${digits[index]}em`, duration: noMotion() ? 0 : .72, ease: 'power3.inOut', overwrite: true });
+      gsap.to(reel, { y: `-${digits[index]}em`, duration: noMotion() || counterRolled ? 0 : .85, ease: 'back.out(1.15)', overwrite: true });
     });
+    counterRolled = true;
   }
 
   function loader(element) {
@@ -81,10 +83,30 @@ window.FolioMotion = (() => {
       } else if (page === 'about') {
         entrance.from(query(root, '.left-message, .about-content h1'), { y: 32, autoAlpha: 0, stagger: .1, duration: .85 }, '<');
       } else {
-        entrance.from(query(root, '.play-kicker, .left-playground p, .play-counter-caption'), { y: 20, autoAlpha: 0, stagger: .11, duration: .7 }, '<');
+        const copy = root.querySelector('.play-copy');
+        const letters = query(copy, '.copy-char');
+        entrance.from(query(root, '.play-kicker, .play-counter-caption'), { y: 20, autoAlpha: 0, stagger: .11, duration: .7 }, '<');
         entrance.from(query(root, '.play-title span'), { yPercent: 120, rotation: 4, autoAlpha: 0, stagger: .048, duration: .78 }, '<+.08');
         entrance.from(query(root, '.play-counter'), { scale: .85, autoAlpha: 0, duration: .72 }, '<+.12');
-        entrance.call(() => rollPlay(root, query(root, '.play-tile').length), null, '<+.3');
+        entrance.fromTo(letters, { autoAlpha: 0, y: 13, rotation: -4 }, {
+          autoAlpha: 1, y: 0, rotation: 0, duration: .52, stagger: .055, ease: 'back.out(1.8)'
+        }, '<+.16');
+        entrance.fromTo(copy.querySelector('.copy-cursor'), { autoAlpha: 0 }, { autoAlpha: 1, duration: .12, repeat: 5, yoyo: true }, '<');
+        entrance.fromTo(letters, { backgroundPosition: '100% 50%' }, {
+          backgroundPosition: '0% 50%', duration: .85, stagger: .016, ease: 'power1.inOut'
+        }, '>-0.12');
+        entrance.call(() => rollPlay(root, query(root, '.play-tile').length), null, '<-.3');
+        let hoverTween;
+        const replay = () => {
+          hoverTween?.kill();
+          hoverTween = gsap.timeline()
+            .to(copy, { autoAlpha: 1, y: 0, duration: .25 })
+            .fromTo(letters, { y: 8, backgroundPosition: '100% 50%' }, {
+              y: 0, backgroundPosition: '0% 50%', duration: .65, stagger: .014, ease: 'back.out(1.7)'
+            }, 0);
+        };
+        copy.addEventListener('pointerenter', replay);
+        cleanups.push(() => { copy.removeEventListener('pointerenter', replay); hoverTween?.kill(); });
       }
     }, root);
 
@@ -123,40 +145,26 @@ window.FolioMotion = (() => {
       }
       if (page === 'playground') {
         const tiles = query(root, '.play-tile');
-        tiles.forEach(tile => {
-          gsap.set(tile, { scale: .76, opacity: .68, transformOrigin: 'center center' });
+        tiles.forEach((tile, index) => {
           const image = tile.querySelector('img');
           const grow = () => gsap.to(image, { scale: 1.06, duration: .4, ease: 'power2.out', overwrite: 'auto' });
           const shrink = () => gsap.to(image, { scale: 1, duration: .5, ease: 'power2.out', overwrite: 'auto' });
           tile.addEventListener('pointerenter', grow); tile.addEventListener('pointerleave', shrink);
           tile.addEventListener('focus', grow); tile.addEventListener('blur', shrink);
           cleanups.push(() => { tile.removeEventListener('pointerenter', grow); tile.removeEventListener('pointerleave', shrink); tile.removeEventListener('focus', grow); tile.removeEventListener('blur', shrink); });
-          const scaleTo = gsap.quickTo(tile, 'scale', { duration: .38, ease: 'power2.out' });
-          const opacityTo = gsap.quickTo(tile, 'opacity', { duration: .38, ease: 'power2.out' });
-          ScrollTrigger.create({
-            ...scroll(tile, 'top bottom', 'bottom top'),
-            onUpdate: self => {
-              const center = Math.max(0, 1 - Math.abs(self.progress - .5) * 2);
-              scaleTo(.76 + center * .34);
-              opacityTo(.68 + center * .32);
-              tile.style.zIndex = center > .55 ? '2' : '1';
-            }
+          gsap.fromTo(tile, { scale: .66, y: 45 + (index % 3) * 22, opacity: .58, transformOrigin: 'center center' }, {
+            scale: 1, y: 0, opacity: 1, ease: 'none',
+            scrollTrigger: { ...scroll(tile, 'top 98%', 'top 40%'), scrub: .55 }
           });
-          gsap.from(image, { yPercent: 12, ease: 'none', scrollTrigger: { ...scroll(tile, 'top bottom', 'bottom top'), scrub: .7 } });
+          gsap.fromTo(image, { yPercent: 7 }, { yPercent: -5, ease: 'none', scrollTrigger: { ...scroll(tile, 'top bottom', 'bottom top'), scrub: .7 } });
         });
-        const onScroll = () => {
-          const center = conditions.mobile ? innerHeight / 2 : panel.getBoundingClientRect().top + panel.clientHeight / 2;
-          let closest = Infinity, active = 0;
-          tiles.forEach((tile, index) => {
-            const box = tile.getBoundingClientRect();
-            const distance = Math.abs(box.top + box.height / 2 - center);
-            if (distance < closest) { closest = distance; active = index; }
-          });
-          rollPlay(root, active + 1);
-        };
-        scroller.addEventListener('scroll', onScroll, { passive: true });
+        const copy = root.querySelector('.play-copy');
+        if (tiles[3] && !conditions.mobile) gsap.to(copy, {
+          autoAlpha: 0, y: -20, ease: 'none',
+          scrollTrigger: { ...scroll(tiles[3], 'top 75%', 'top 25%'), scrub: .4 }
+        });
         ScrollTrigger.refresh();
-        return () => scroller.removeEventListener('scroll', onScroll);
+        return;
       }
       ScrollTrigger.refresh();
     });
