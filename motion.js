@@ -159,9 +159,9 @@ window.FolioMotion = (() => {
           gsap.fromTo(image, { yPercent: 7 }, { yPercent: -5, ease: 'none', scrollTrigger: { ...scroll(tile, 'top bottom', 'bottom top'), scrub: .7 } });
         });
         const copy = root.querySelector('.play-copy');
-        if (tiles[3] && !conditions.mobile) gsap.to(copy, {
+        if (tiles[6] && !conditions.mobile) gsap.to(copy, {
           autoAlpha: 0, y: -20, ease: 'none',
-          scrollTrigger: { ...scroll(tiles[3], 'top 75%', 'top 25%'), scrub: .4 }
+          scrollTrigger: { ...scroll(tiles[6], 'top 58%', 'top 12%'), scrub: .4 }
         });
         ScrollTrigger.refresh();
         return;
