@@ -9,6 +9,16 @@ window.FolioMotion = (() => {
   const noMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const query = (scope, selector) => [...scope.querySelectorAll(selector)];
 
+  function rollPlay(root, value) {
+    const label = root.querySelector('#play-count-label');
+    const digits = String(value).padStart(2, '0');
+    if (!label || label.textContent === digits) return;
+    label.textContent = digits;
+    query(root, '.play-reel').forEach((reel, index) => {
+      gsap.to(reel, { y: `-${digits[index]}em`, duration: noMotion() ? 0 : .72, ease: 'power3.inOut', overwrite: true });
+    });
+  }
+
   function loader(element) {
     if (!element) return;
     const number = element.querySelector('.loader-progress');
@@ -36,7 +46,7 @@ window.FolioMotion = (() => {
     const panel = root.querySelector('#main');
     const reduced = noMotion();
     const context = gsap.context(() => {
-      if (reduced) return;
+      if (reduced) { if (page === 'playground') rollPlay(root, query(root, '.play-tile').length); return; }
       const loaderActive = document.getElementById('intro-loader')?.classList.contains('is-done') === false;
       const entrance = gsap.timeline({ delay: loaderActive ? 2.25 : .06, defaults: { ease: 'power3.out' } });
       entrance.from(query(root, '.nav-links a, .mail-link'), { y: -18, autoAlpha: 0, stagger: .065, duration: .55 });
@@ -49,7 +59,9 @@ window.FolioMotion = (() => {
       } else if (page === 'about') {
         entrance.from(query(root, '.left-message, .about-content h1'), { y: 32, autoAlpha: 0, stagger: .1, duration: .85 }, '<');
       } else {
-        entrance.from(query(root, '.left-playground > *'), { y: 24, autoAlpha: 0, stagger: .08, duration: .75 }, '<');
+        entrance.from(query(root, '.play-kicker, .left-playground p, .play-counter-caption'), { y: 20, autoAlpha: 0, stagger: .11, duration: .7 }, '<');
+        entrance.from(query(root, '.play-title span'), { yPercent: 120, rotation: 4, autoAlpha: 0, stagger: .048, duration: .78 }, '<+.08');
+        entrance.call(() => rollPlay(root, query(root, '.play-tile').length), null, '<+.3');
       }
     }, root);
 
@@ -87,12 +99,33 @@ window.FolioMotion = (() => {
         });
       }
       if (page === 'playground') {
-        query(root, '.play-tile').forEach(tile => {
-          gsap.from(tile, {
-            y: 35, autoAlpha: 0, duration: .65, ease: 'power3.out',
-            scrollTrigger: { ...scroll(tile), toggleActions: 'play none none none' }
+        const tiles = query(root, '.play-tile');
+        tiles.forEach(tile => {
+          gsap.set(tile, { scale: .76, opacity: .68, transformOrigin: 'center center' });
+          const scaleTo = gsap.quickTo(tile, 'scale', { duration: .38, ease: 'power2.out' });
+          const opacityTo = gsap.quickTo(tile, 'opacity', { duration: .38, ease: 'power2.out' });
+          ScrollTrigger.create({
+            ...scroll(tile, 'top bottom', 'bottom top'),
+            onUpdate: self => {
+              const center = Math.max(0, 1 - Math.abs(self.progress - .5) * 2);
+              scaleTo(.76 + center * .34);
+              opacityTo(.68 + center * .32);
+              tile.style.zIndex = center > .55 ? '2' : '1';
+            }
           });
         });
+        const onScroll = () => {
+          const center = conditions.mobile ? innerHeight / 2 : panel.getBoundingClientRect().top + panel.clientHeight / 2;
+          let closest = Infinity, active = 0;
+          tiles.forEach((tile, index) => {
+            const box = tile.getBoundingClientRect();
+            const distance = Math.abs(box.top + box.height / 2 - center);
+            if (distance < closest) { closest = distance; active = index; }
+          });
+          rollPlay(root, active + 1);
+        };
+        scroller.addEventListener('scroll', onScroll, { passive: true });
+        return () => scroller.removeEventListener('scroll', onScroll);
       }
       ScrollTrigger.refresh();
     });
