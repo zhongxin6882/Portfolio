@@ -80,3 +80,18 @@
 @media(max-width:900px){.project-row{grid-template-columns:minmax(75px,1fr) 20px minmax(100px,1.3fr) 42px;gap:9px}.gallery-overlay{padding:15px}}
 @media(max-width:650px){.project-rows{gap:13px}.project-row{grid-template-columns:minmax(78px,1fr) 12px minmax(90px,1.25fr) 36px;gap:6px;font-size:10px}.project-row.selected{font-size:13px}.project-date{font-size:8px}.gallery-index{top:6%}.gallery-more{bottom:5%}.work-spotlight{display:none}.loader-bottom{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.spotlight-image,.loader-cat,.cat-outline,.cat-feet,.cat-eye,.loader-word,.loader-eyebrow{animation:none!important;stroke-dashoffset:0!important;opacity:1!important}}
+/* The opening composition keeps every project inside the right panel. */
+.gallery-intro{height:100%;min-height:620px;overflow:hidden}
+.intro-heading{position:absolute;top:12%;left:6%;right:6%;display:flex;justify-content:space-between;color:var(--muted);z-index:2}
+.collage{width:min(78%,670px);height:min(71%,570px);aspect-ratio:auto;transform:translateY(calc(var(--intro-progress,0)*-13%)) scale(calc(1 + var(--intro-progress,0)*.08));transition:transform .13s linear}
+.collage-image{display:block;position:absolute;overflow:hidden;box-shadow:0 12px 32px #21130e16;border-radius:2px;transition:box-shadow .3s,filter .3s;bottom:auto;right:auto}
+.collage-image:hover,.collage-image:focus-visible{box-shadow:0 20px 46px #21130e35;filter:saturate(1.15);outline:2px solid var(--accent);outline-offset:4px}
+.collage-image img{width:100%;height:100%;object-fit:cover}
+.collage-1{left:5%;top:6%;width:38%;height:42%}
+.collage-2{left:55%;top:1%;width:42%;height:46%}
+.collage-3{left:0;top:60%;width:44%;height:39%}
+.collage-4{left:57%;top:55%;width:36%;height:42%}
+.collage-caption{position:absolute;bottom:0;left:0;right:0;padding:18px 12px 10px;color:#fff;background:linear-gradient(transparent,#0009);text-shadow:0 1px 6px #0008;opacity:.82;transition:opacity .3s}
+.collage-image:hover .collage-caption,.collage-image:focus-visible .collage-caption{opacity:1}
+.gallery-image-link,.gallery-item:nth-child(even) .gallery-image-link{max-width:100%;max-height:100%;overflow:hidden}
+@media(max-width:650px){.gallery-intro{height:70vh;min-height:500px}.intro-heading{top:12%;font-size:8px}.collage{width:85%;height:57%}.collage-caption{font-size:8px;padding:14px 6px 6px}}
