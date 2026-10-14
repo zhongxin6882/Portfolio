@@ -4,11 +4,11 @@
  * 当前 SVG 为可替换的 UI 示意画面，项目年份与介绍请按真实资料核对。
  */
 window.PORTFOLIO = {
-  brand:'SEPTEMBER', name:'董众鑫', location:'CHINA · INTERACTION & VISUAL DESIGN',
+  brand:'SEPTEMBER', name:'九月十五', location:'CHINA · INTERACTION & VISUAL DESIGN',
   email:'',
   aboutTitle:'把复杂信息，\n设计得清晰。',
   about:[
-    '你好，我是董众鑫，一名交互与视觉设计师，专注于 B 端产品与复杂业务场景的体验设计。',
+    '你好，我是九月十五，一名交互与视觉设计师，专注于 B 端产品与复杂业务场景的体验设计。',
     '我的项目经历涵盖城市安防、城市管理、网络安全与数据治理。从需求梳理、交互流程到设计规范和动态可视化，我希望让信息更易理解，让操作更清晰。'
   ],
   focus:['B 端产品设计','交互流程','城市安防','数据可视化','设计规范','动态视觉'],
