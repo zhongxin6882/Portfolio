@@ -4,7 +4,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safe=u=>/^(assets\/|https:\/\/|mailto:)/.test(u||'')?esc(u):'#';
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,scrollFrame,galleryAbort,projectKeyHandler,motionCleanup;
+  let dark=localStorage.getItem('folio-theme')==='dark',sound=false,audioContext,clockFrame,clockTimer,clockAbort,scrollFrame,galleryAbort,projectKeyHandler,motionCleanup;
   document.body.classList.toggle('dark',dark);
   function route(){
     const parts=location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
@@ -19,7 +19,7 @@
     const copyLines=['想法、试验与未完的灵感。','为好奇心留一点空间。'];
     const animatedCopy=`<p class="play-copy" aria-label="${copyLines.join(' ')}">${copyLines.map(line=>`<span class="copy-line" aria-hidden="true">${[...line].map(char=>`<span class="copy-char">${esc(char)}</span>`).join('')}</span>`).join('')}<span class="copy-cursor" aria-hidden="true"></span></p>`;
     const body=page==='work'||page==='detail'
-      ?'<div class="orbit-clock" aria-label="上海时间动态时钟"><canvas id="orbit-canvas" aria-hidden="true"></canvas><time id="clock-time">--:--</time></div>'
+      ?'<div class="pl-clock"><div class="orbit-clock" aria-label="上海时间动态时钟"><canvas class="orbit-lines" id="orbit-canvas" aria-hidden="true"></canvas><time class="orbit-center" id="clock-time" aria-label="上海时间"></time></div></div>'
       :page==='about'
         ?'<div class="left-message" aria-hidden="true">不止于<br><em>屏幕之间。</em></div>'
         :`<div class="left-playground"><div class="play-kicker mono">九月十五 / 视觉实验</div><h1 class="play-title" aria-label="灵感实验室">${[...'灵感实验室'].map((letter,i)=>`<span aria-hidden="true" style="--letter:${i}">${letter}</span>`).join('')}</h1>${animatedCopy}<div class="play-counter" aria-label="8 个视觉片段"><div class="play-digits" aria-hidden="true">${[0,1].map(i=>`<span class="play-digit-window"><span class="play-reel" data-place="${i}">${Array.from({length:10},(_,n)=>`<span>${n}</span>`).join('')}</span></span>`).join('')}</div><div class="play-counter-caption mono">片段 <span id="play-count-label">00</span> / 08</div></div></div>`;
@@ -62,7 +62,7 @@
     if(fromDeepLink){const index=timeline.indexOf(p);document.querySelector(`.gallery-item[data-index="${index}"]`)?.classList.add('is-locked')}
   }
   function render(){
-    cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);
+    cancelAnimationFrame(clockFrame);cancelAnimationFrame(scrollFrame);clearInterval(clockTimer);clockAbort?.abort();clockAbort=null;
     const priorView=document.getElementById('project-view');if(priorView)window.FolioMotion?.projectDispose(priorView);
     motionCleanup?.();motionCleanup=null;
     galleryAbort?.abort();galleryAbort=null;
@@ -85,24 +85,37 @@
   function ping(){if(!sound)return;try{audioContext||=new(window.AudioContext||window.webkitAudioContext)();const o=audioContext.createOscillator(),g=audioContext.createGain();o.type='sine';o.frequency.setValueAtTime(650,audioContext.currentTime);o.frequency.exponentialRampToValueAtTime(420,audioContext.currentTime+.08);g.gain.setValueAtTime(.025,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime+.09);o.connect(g).connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+.1)}catch(_){}}
   function initClock(){
     const canvas=document.getElementById('orbit-canvas'),time=document.getElementById('clock-time');if(!canvas)return;const ctx=canvas.getContext('2d');
-    const update=()=>{time.textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date())};update();clockTimer=setInterval(update,1000);
+    clockAbort=new AbortController();
+    const update=()=>{
+      const now=new Date(),value=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+      time.setAttribute('datetime',`${new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(now)}T${value}:00+08:00`);
+      [...value].forEach((char,index)=>{
+        let slot=time.children[index];
+        if(!slot){slot=document.createElement('span');slot.className=`orbit-ch${char===':'?' is-colon':''}`;const digit=document.createElement('span');digit.className='orbit-ch-in';digit.textContent=char;slot.append(digit);time.append(slot);if(reduced)digit.style.transform='translateY(0)';else requestAnimationFrame(()=>{digit.style.transform='translateY(0)'});return}
+        const previous=slot.querySelector('.orbit-ch-in:not(.is-old)');if(previous?.textContent===char)return;
+        slot.classList.toggle('is-colon',char===':');
+        const next=document.createElement('span');next.className='orbit-ch-in';next.textContent=char;slot.append(next);
+        if(reduced){previous?.remove();next.style.transform='translateY(0)';return}
+        if(previous){previous.classList.add('is-old');previous.style.transform='translateY(-120%)'}
+        requestAnimationFrame(()=>{next.style.transform='translateY(0)'});
+        setTimeout(()=>previous?.remove(),720);
+      });
+    };update();clockTimer=setInterval(update,1000);
     const draw=()=>{
       if(!canvas.isConnected)return;const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=box.width,h=box.height;
       if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-      const cx=w*.5,cy=h*.51,r=Math.min(w,h)*.39,phase=reduced?0:Date.now()/10500,ink=dark?'220,211,204':'80,71,66';
-      for(let i=0;i<60;i++){
-        const a=i*Math.PI*2/60-Math.PI*.5,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+      const cx=w*.5,cy=h*.5,r=Math.min(w,h)*.39,phase=reduced?0:Date.now()/10500,ink=dark?'220,211,204':'80,71,66';
+      for(let i=0;i<14;i++){
+        const a=-Math.PI*.5-i*Math.PI*.5/13,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
         const twist=a+.82+Math.sin(phase+i*.06)*.22,sx=cx+Math.cos(twist)*r*.12,sy=cy+Math.sin(twist)*r*.12;
         const bend=a-.55+Math.sin(phase*.72+i*.08)*.16;
         ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(cx+Math.cos(bend)*r*.52,cy+Math.sin(bend)*r*.52,x,y);
         ctx.strokeStyle=`rgba(${ink},${i%5===0?.22:.13})`;ctx.lineWidth=.6;ctx.stroke();
         ctx.fillStyle=`rgba(${ink},.63)`;ctx.font='8px "DM Mono",monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(i).padStart(2,'0'),cx+Math.cos(a)*(r+15),cy+Math.sin(a)*(r+15));
       }
-      const second=new Date().getSeconds(),sa=second*Math.PI*2/60-Math.PI*.5;
-      ctx.beginPath();ctx.arc(cx+Math.cos(sa)*(r+29),cy+Math.sin(sa)*(r+29),2.2,0,Math.PI*2);ctx.fillStyle='#f45b2b';ctx.fill();
       if(!reduced)clockFrame=requestAnimationFrame(draw);
-    };draw();
+    };draw();window.addEventListener('resize',draw,{signal:clockAbort.signal});
   }
   function initGallery(){
     const panel=document.getElementById('main'),items=[...panel.querySelectorAll('.gallery-item')],intro=panel.querySelector('.gallery-intro'),rail=document.getElementById('rail-count'),cursor=panel.querySelector('.cursor-marker');
