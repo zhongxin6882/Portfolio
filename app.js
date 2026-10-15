@@ -107,8 +107,8 @@
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
       const cx=w*.5,cy=h*.5,r=Math.min(w,h)*.39,phase=reduced?0:Date.now()/10500,ink=dark?'220,211,204':'80,71,66';
       for(let i=0;i<14;i++){
-        const a=-Math.PI*.5-i*Math.PI*.5/13,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
-        const twist=a+.82+Math.sin(phase+i*.06)*.22,sx=cx+Math.cos(twist)*r*.12,sy=cy+Math.sin(twist)*r*.12;
+        const a=-Math.PI*.5-Math.PI/15-i*Math.PI/30,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+        const sx=cx-r*.22,sy=cy;
         const bend=a-.55+Math.sin(phase*.72+i*.08)*.16;
         ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(cx+Math.cos(bend)*r*.52,cy+Math.sin(bend)*r*.52,x,y);
         ctx.strokeStyle=`rgba(${ink},${i%5===0?.22:.13})`;ctx.lineWidth=.6;ctx.stroke();
