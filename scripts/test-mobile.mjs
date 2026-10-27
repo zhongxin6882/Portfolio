@@ -96,8 +96,8 @@ try {
       if(route==='about/'){
         const art=await page.locator('.art-panel').boundingBox();
         const stage=await page.locator('.art-stage').boundingBox();
-        const resume=await page.locator('.resume').boundingBox();
-        assert(art.y<resume.y,'About artwork must precede resume');
+        const history=await page.locator('.history-showcase').boundingBox();
+        assert(art.y<history.y,'About artwork must precede work history');
         assert(stage.y>=65&&stage.y<=110,'About artwork has excessive top clearance at '+width);
       }
       if(route==='contact.html'){

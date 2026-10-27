@@ -4,6 +4,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync,
 import { dirname, resolve } from 'node:path';
 
 const root = process.cwd();
+const basePath = process.env.VITE_BASE_PATH || (process.env.GITHUB_REPOSITORY?.endsWith('/Portfolio') ? '/Portfolio/' : '/Portfolio-2/');
 
 // All primary pages use exactly one copyright/person markup source.
 function sharedBrand() {
@@ -91,7 +92,7 @@ function copyClassicAssets() {
 }
 
 export default defineConfig({
-  base: '/Portfolio-2/',
+  base: basePath,
   plugins: [sharedBrand(), copyClassicAssets()],
   build: {
     outDir: 'dist',

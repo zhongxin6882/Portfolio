@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 
 const read = name => readFileSync(resolve(process.cwd(), name), 'utf8');
 const routes = ['index.html', 'about/index.html', 'playground.html', 'contact.html'];
+const basePath = process.env.VITE_BASE_PATH || (process.env.GITHUB_REPOSITORY?.endsWith('/Portfolio') ? '/Portfolio/' : '/Portfolio-2/');
+const basePattern = basePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const template = read('brand-template.html').trim();
 const placeholder = '<a class="brand" data-global-brand></a>';
 const faces = ['front', 'right', 'back', 'left'];
@@ -33,7 +35,7 @@ for (const page of routes) {
     page + ': shared brand.css must load last');
   // Vite may merge brand-motion into the Playground entry chunk.
   assert(source.includes('src="' + prefix + 'brand-motion.js"'), page + ': source GSAP flip script missing');
-  assert(/<script[^>]*src="\/Portfolio-2\/assets\/[^"]+\.js"/.test(dist), page + ': compiled module script missing');
+  assert(new RegExp('<script[^>]*src="' + basePattern + 'assets/[^"]+.js"').test(dist), page + ': compiled module script missing');
   assert(dist.includes('src="' + prefix + 'site-header.js'), page + ': missing global header');
   for (const face of faces) {
     const count = (dist.match(new RegExp('class="brand-face brand-face-' + face + '"', 'g')) || []).length;

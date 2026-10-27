@@ -38,7 +38,7 @@ jobs:
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/portfolio-vite-preview.log 2>&1 &
           for i in $(seq 1 30); do
-            if curl --silent --fail http://127.0.0.1:4173/Portfolio-2/index.html >/dev/null; then break; fi
+            if curl --silent --fail http://127.0.0.1:4173/Portfolio/index.html >/dev/null; then break; fi
             sleep 1
           done
-          node scripts/test-mobile.mjs
+          MOBILE_TEST_URL=http://127.0.0.1:4173/Portfolio/ node scripts/test-mobile.mjs
