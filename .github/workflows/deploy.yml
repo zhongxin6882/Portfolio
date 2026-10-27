@@ -2,7 +2,7 @@ name: Build and deploy portfolio
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/demo-work-history-20261027]
   workflow_dispatch:
 
 permissions:
