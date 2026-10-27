@@ -1,29 +1,25 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#eae7e4">
-  <meta name="description" content="九月十五的交互与视觉设计作品集，聚焦 B 端产品与复杂业务体验。">
-  <title>九月十五 — 设计作品集</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261015-clock2">
-</head>
-<body>
-  <a class="skip-link" href="#main">跳转到内容</a>
-  <div id="intro-loader" aria-hidden="true"><div class="loader-center">
-    <span class="loader-eyebrow">精选设计作品集</span>
-    <svg class="loader-cat" viewBox="0 0 76 85" fill="none" aria-hidden="true"><path class="cat-outline" d="M16 28 22 6l17 14L55 6l7 22c8 20-1 36-23 37C16 65 8 50 16 28Z" stroke="#f4f0ed" stroke-width="2"/><ellipse class="cat-eye eye-left" cx="29" cy="39" rx="7" ry="6" fill="#f4f0ed"/><ellipse class="cat-eye eye-right" cx="49" cy="39" rx="7" ry="6" fill="#f4f0ed"/><path class="cat-feet" d="M24 65c-8 11-7 17-3 19m33-19c7 10 6 17 2 19" stroke="#f4f0ed" stroke-width="2"/></svg>
-    <span class="loader-word">九月十五 <em>作品集</em></span>
-    <span class="loader-progress">000</span>
-  </div><span class="loader-bottom">九月十五 &nbsp; / &nbsp; 交互与视觉设计</span></div>
-  <div id="app"></div>
-  <script src="content.js?v=20261015-clock2"></script>
-  <script src="assets/vendor/gsap.min.js"></script>
-  <script src="assets/vendor/ScrollTrigger.min.js"></script>
-  <script src="motion.js?v=20261015-clock2"></script>
-  <script src="app.js?v=20261015-clock2"></script>
-</body>
-</html>
+<!doctype html><!--
+  index.html — 首页 WORK：19 个项目的循环卡片堆叠画廊
+  三栏布局：左 .work-info 信息栏 / 中 #work-stack 卡片堆叠 / 右 .work-index 项目索引
+
+  脚本加载顺序（有含义，勿随意调整）：
+    work.js           画廊数据 + 堆叠交互引擎（必须最先，负责注入卡片与索引 DOM）
+    site-header.js    页头菜单 / 时钟 / 音频
+    page-transition.js 路由转场（会拦截站内链接点击）
+    locale.js         中英双语替换（必须最后，用 MutationObserver 翻译已注入的内容）
+
+  本页是全站唯一设了 data-default-language="zh" 的页面，首屏默认中文。
+
+  ⚠️ 增删项目时要同步四处：work.js 的 projects 数组、两处 splice 下标、
+     assets/work/ 里的图片文件名（按数组序号命名）、下方硬编码的分母 <small>/19</small>。
+  ⚠️ 本文件是压缩单行格式，请用精确字符串替换改动，不要整文件重排。
+  详见 AGENTS.md 第 7 节。
+-->
+<html lang="en"><head><link rel="icon" type="image/x-icon" href="favicon.ico?v=center-grin-20261023b"><link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=center-grin-20261023b"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Work — September Fifteen</title><meta name="description" content="Selected work by Jiuyueshiwu — interactive design and digital experiences."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"><script>try{if(sessionStorage.getItem("portfolio-route-transition"))document.documentElement.classList.add("has-route-transition")}catch{}</script><link rel="stylesheet" href="style.css?v=header-20261020"><link rel="stylesheet" href="work.css?v=demo21-stack-fix-20261023"><link rel="stylesheet" href="mobile-responsive.css?v=mobile-stack-20261023b"><link rel="stylesheet" href="brand.css?v=unified-flip-20261022"><link rel="preload" as="image" href="pusher-poses.svg?v=2"></head>
+<body class="work-home" data-default-language="zh"><div id="intro-loader" aria-hidden="true"><div class="intro-name"><span>JIUYUE</span><span>SHIWU</span></div><div class="intro-curtain"><div class="intro-pusher"><span class="intro-pusher-pose pose-step-1"></span><span class="intro-pusher-pose pose-step-2"></span><span class="intro-pusher-pose pose-step-3"></span><span class="intro-pusher-pose pose-step-4"></span><span class="intro-pusher-pose pose-step-5"></span><span class="intro-pusher-pose pose-step-6"></span></div></div></div>
+<header class="chrome"><a class="brand" data-global-brand></a><div class="header-slot"><button id="menuToggle" aria-expanded="true">Menu</button><nav id="menu"><a href="index.html" aria-current="page">WORK</a><a href="about/">ABOUT</a><a href="playground.html">PLAYGROUND</a><a href="contact.html">CONTACT</a></nav></div><div class="audio">Audio <button id="audioToggle" type="button" aria-pressed="false"><span class="audio-label">Off —</span><span class="audio-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button></div><div class="location">Working China beijing<br><span id="clock" aria-label="Beijing local time">--:--:--</span></div><div class="inquiry"><a href="mailto:zhongxin6882@gmail.com">zhongxin6882@gmail.com</a><div class="inquiry-language"><button class="language-toggle" type="button" aria-label="Switch language" aria-pressed="false">中文</button></div></div></header>
+<main id="top" class="work-shell"><aside class="work-info"><div class="work-meta"><div class="work-meta-row"><span>Role</span><p id="work-role"></p><span>Launch</span><p id="work-date"></p></div><div class="work-meta-row work-meta-awards"><span>Recognition</span><p id="work-awards"></p></div><button class="work-visit" id="work-visit" type="button">View project →</button></div><div class="work-counter"><span>Selected work</span><div><strong id="work-number">01</strong><small>/19</small></div></div><span class="work-scroll-label">Scroll ↓</span></aside>
+<section id="work-stack" class="work-stack" aria-label="Selected work gallery"></section><aside class="work-index" aria-label="Project list"><div id="work-index-items"></div><a class="work-showreel" href="playground.html">’25 showreel ▶</a></aside></main>
+<div id="work-focus" class="work-focus" hidden><button class="focus-close" type="button" aria-label="Close preview">×</button><div class="focus-cover"><img alt=""><div class="focus-caption"><span></span><h2></h2><p></p><button type="button">View project →</button></div></div></div>
+<div id="work-detail" class="work-detail" hidden><button class="detail-close" type="button" aria-label="Close project">×</button><div class="detail-body"></div></div>
+<script type="module" src="work.js?v=work-loop-demo21-20261023"></script><script src="site-header.js?v=mobile-stack-20261023b"></script><script src="page-transition.js?v=route-transition-20261019"></script><script src="locale.js?v=zh-default-20261020"></script><script type="module" src="brand-motion.js"></script></body></html>

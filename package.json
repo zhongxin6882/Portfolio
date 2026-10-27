@@ -1,17 +1,17 @@
 {
-  "name": "portfolio-github-pages",
-  "version": "1.0.0",
+  "name": "jiuyueshiwu-portfolio",
   "private": true,
-  "description": "九月十五的静态设计作品集",
+  "version": "1.1.0",
+  "type": "module",
   "scripts": {
-    "vendor:gsap": "node scripts/copy-gsap.cjs",
-    "check": "node --check app.js && node --check motion.js && node --check content.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zhongxin6882/Portfolio.git"
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "gsap": "3.15.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
   }
 }

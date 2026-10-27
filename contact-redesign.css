@@ -1,0 +1,191 @@
+/* Contact keeps the shared chrome and Work page's neutral background. */
+html,
+body.contact-redesign {
+  min-height: 100%;
+  background: #ededed;
+  color: #080808;
+}
+
+body.contact-redesign { font-family: var(--font-sans); }
+body.contact-redesign .chrome { z-index: 30; color: #080808; }
+/* Global brand styles are defined exclusively in brand.css. */
+.contact-redesign .chrome .header-slot nav a { position: relative; }
+.contact-redesign .chrome .header-slot nav a[aria-current="page"] { padding-left: 1.12em; }
+.contact-redesign .chrome .header-slot nav a::before { content: "→"; position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; }
+.contact-redesign .chrome .header-slot nav a[aria-current="page"]::before { opacity: 1; transform: translate(0,-.06em) rotate(-45deg); }
+.contact-redesign .chrome .inquiry-language { display: flex; justify-content: flex-end; margin-top: 12px; }
+.contact-redesign .chrome .inquiry .language-toggle { display: inline-block; margin: 0; padding: 4px 9px; border: 1px solid #aaa; border-radius: 20px; background: transparent; color: #111; line-height: 1; font: 10px var(--font-mono); }
+
+.contact-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 71%) minmax(0, 29%);
+  grid-template-rows: minmax(0, 1fr) minmax(134px, 17.5svh);
+  width: 100%;
+  height: 100svh;
+  min-height: 690px;
+  border-top: 1px solid #151515;
+  overflow: hidden;
+}
+
+.contact-intro {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid #10101020;
+}
+
+.contact-hero-illustration {
+  display: block;
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  left: 5%;
+  width: 90%;
+  height: calc(90% - 99px);
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.contact-navigation {
+  display: grid;
+  grid-template-rows: auto repeat(4, minmax(0, 1fr));
+  min-height: 0;
+  padding-top: 106px;
+}
+
+.contact-nav-heading {
+  align-self: end;
+  margin: 0;
+  padding: 0 7% 22px;
+  border-bottom: 1px solid #10101020;
+  font-size: clamp(30px, 2.55vw, 48px);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -.065em;
+  word-spacing: .58em;
+}
+
+.contact-navigation a {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 10% 0 7%;
+  border-bottom: 1px solid #10101020;
+  color: #0b0b0b;
+  text-decoration: none;
+  font-size: clamp(24px, 1.8vw, 34px);
+  font-weight: 400;
+  letter-spacing: -.05em;
+  transition: background-color .22s ease, color .22s ease;
+}
+
+.contact-navigation a:hover,
+.contact-navigation a:focus-visible {
+  background: #080808;
+  color: #fff;
+}
+
+.contact-navigation a:focus-visible {
+  outline: 3px solid #f0532e;
+  outline-offset: -3px;
+}
+
+.contact-nav-number {
+  color: #777;
+  font-size: clamp(12px, .9vw, 16px);
+  letter-spacing: -.03em;
+}
+
+.contact-navigation a:hover .contact-nav-number,
+.contact-navigation a:focus-visible .contact-nav-number { color: #fff; }
+
+.contact-nav-arrow {
+  font-size: 1.15em;
+  line-height: 1;
+  font-weight: 300;
+  transition: transform .22s ease;
+}
+
+.contact-navigation a:hover .contact-nav-arrow,
+.contact-navigation a:focus-visible .contact-nav-arrow { transform: translateX(5px); }
+
+.contact-bottom {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 26.3% 23.2% 21.5% 29%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid #10101045;
+  background: transparent;
+  color: #0a0a0a;
+  font-size: inherit;
+}
+
+.contact-bottom-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 19px 7.2% 29px;
+  border-right: 1px solid #10101020;
+}
+
+.contact-bottom-cell > small {
+  color: #737373;
+  font-size: clamp(11px, .85vw, 15px);
+  white-space: nowrap;
+}
+
+.contact-bottom-cell > small span { padding-right: .45em; }
+
+.contact-bottom-content {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: clamp(14px, 1.12vw, 20px);
+  letter-spacing: -.035em;
+}
+
+.contact-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.contact-social-logos { gap: clamp(18px, 2.4vw, 44px); }
+.zcool-logo { display: block; width: 85.5px; height: auto; flex: none; }
+.xiaohongshu-logo { display: block; width: 61.2px; height: auto; flex: none; }
+
+.contact-legal {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 9%;
+  border-right: 0;
+  font-size: clamp(12px, 1vw, 18px);
+  white-space: nowrap;
+  letter-spacing: -.04em;
+}
+
+@media (max-width: 1100px) {
+  .contact-screen { grid-template-columns: minmax(0, 68%) minmax(0, 32%); }
+  .contact-bottom-content { gap: 10px; font-size: 14px; }
+  .contact-icon { width: 22px; height: 22px; }
+  .contact-legal { flex-wrap: wrap; align-content: center; }
+}
+
+@media (max-width: 760px) {
+  .contact-screen { display: block; height: auto; min-height: 100svh; overflow: visible; }
+  .contact-intro { height: 68vh; min-height: 400px; }
+  .contact-hero-illustration { top: auto; bottom: 0; height: calc(100% - 150px); }
+  .contact-navigation a { min-height: 90px; }
+  .contact-bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contact-bottom-cell { min-height: 135px; padding: 18px 7%; border-bottom: 1px solid #10101020; }
+  .contact-legal { white-space: normal; }
+}
