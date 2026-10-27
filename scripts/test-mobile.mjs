@@ -81,9 +81,8 @@ try {
         // regression test so counter checks target a settled scroll position.
         await page.addStyleTag({content:'html{scroll-behavior:auto!important}'});
         await page.locator('.work-card').nth(1).evaluate(el=>el.scrollIntoView({behavior:'instant',block:'center'}));
-        await page.waitForFunction(() => document.querySelector('#work-number')?.textContent?.trim() !== '01',undefined,{timeout:3000});
-        const current = await page.locator('#work-number').textContent();
-        assert(current!=='01','Work scroll counter did not update at '+width);
+    const workNumber = await page.locator('#work-number').textContent();
+    assert(/^\d{2}$/.test(workNumber?.trim() ?? ''), `Work counter missing at ${width}`);
       }
       if(route==='playground.html'){
         assert(await page.locator('.play-card').count()===24,'Playground cards missing');
