@@ -1,17 +1,1 @@
-{
-  "name": "portfolio-github-pages",
-  "version": "1.0.0",
-  "private": true,
-  "description": "ä¹æœˆåäº”çš„é™æ€è®¾è®¡ä½œå“é›†",
-  "scripts": {
-    "vendor:gsap": "node scripts/copy-gsap.cjs",
-    "check": "node --check app.js && node --check motion.js && node --check content.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zhongxin6882/Portfolio.git"
-  },
-  "dependencies": {
-    "gsap": "3.15.0"
-  }
-}
+m«ëˆ§½©buªàºg§´ú+µú%Š¦j)ÿ¥§$j£²‰Ô±¨m«ë€İ…¹îš(§~)^¢‹­~)^mºŞjFëy©ÊyÚ.¶›­º˜§¶‰bë(~W§‚Øgº`İuç(uç^r‡^Šzn¶^–—b²™ZÊØb²g¬±¨Š)éºØ§¦ë_ŠWyö®–×è®Ë]Šz(ºÚn¶‹­¦ë_ŠWyö®–×è®Ë]¢ë
